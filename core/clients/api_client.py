@@ -1,9 +1,11 @@
-from os import environ
-
 import requests
 import os # модуль для работы с файлами
 from dotenv import load_dotenv
-from core.setting.environments import Environment
+from core.setting.environments import Environment # среда
+from core.clients.endpoints import Endpoints
+from core.setting.config import Users, Timeouts
+import pytest
+import allure
 
 load_dotenv() # чтобы прогружались все актуальные переменные, которые в файле dotenv
 
@@ -16,7 +18,10 @@ class APIClient:   # обертка для фреймворка requests
             raise ValueError(f"Unsupported environment value: {environment_str}")
 
         self.base_url = self.get_base_url(environment)
-        self.headers = {
+        # self.session установить httpx-соединение и не закрывать сессию и выполнить несколько запросов
+        # это помогает сократить расходы на подключение
+        self.session = requests.Session()
+        self.session.headers = {
             'Content-Type': 'application/json'
         }
 
@@ -38,6 +43,42 @@ class APIClient:   # обертка для фреймворка requests
     def post(self, endpoint, data=None, status_code=200):
         url = self.base_url + endpoint
         response = requests.post(url, headers=self.headers, json=data)
+        # ранее было response = httpx.post(BASE_URL + LOGIN_USER, json=users_data)
         if status_code:
             assert response.status_code == status_code
         return response.json()
+
+    # функция: проверка доступности и работоспособности API
+    def ping(self):
+        with allure.step('Ping api client'):
+            url = f"{self.base_url}/{Endpoints.PING_ENDPOINT}"
+            response = self.session.get(url)
+            response.raise_for_status()  # проверка http ошибки
+        with allure.step('Assert status code'):
+            assert response.status_code == 201, f"Expected status 201 but got {response.status_code}"  # если получили другой код статус, то ожидали, но получили такой-то код
+        return response.status_code
+
+    # получение токена
+    def auth(self):
+        with allure.step('Getting authenticate'):  # получаем аутентификацию
+            url = f"{self.base_url}/{Endpoints.AUTH_ENDPOINT}"  # формируем переменную url
+            payload = {"username": Users.USERNAME, "password": Users.PASSWORD}  # передаем тело в запросе POST
+            response = self.session.post(url, json=payload, timeout=Timeouts.TIMEOUT)
+            response.raise_for_status()  # доп проверка: проверяем, что ошибки http нет
+        with allure.step('Checking status code'):
+            assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
+        token = response.json().get("token")  # полученный токен из ответа положили в переменную token
+        with allure.step('GUpdating header with authorization'):  # обновляем header с записью авторизацией
+            self.session.headers.update(
+                {"Authorization": f"Bearer {token}"})  # из строки 23 (добавляем заголовок Authorization)
+
+    # GetBooking
+    def get_booking_by_id(self, id_booking):
+        with allure.step(f'Отправляем запрос по адресу: {self.base_url + ВOOKING_ENDPOINT + / + id_booking}'):
+            url = f"{self.base_url}{ВOOKING_ENDPOINT}/{id_booking}"
+            response = self.session.get(url, timeout=Timeouts.TIMEOUT)
+            response.raise_for_status()  # получение статус кода, а именно нет ли какой-то определенной  http ошибки
+        with allure.step(f'Проверяем код ответа'):
+            assert response.status_code == 200, f"Ожидали статус код 200, но получили {response.status_code}"
+        return  response.status_code
+
