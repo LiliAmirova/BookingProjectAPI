@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from core.setting.environments import Environment # среда
 from core.clients.endpoints import Endpoints
 from core.setting.config import Users, Timeouts
+from requests.auth import HTTPBasicAuth
 import allure
 
 load_dotenv() # чтобы прогружались все актуальные переменные, которые в файле dotenv
