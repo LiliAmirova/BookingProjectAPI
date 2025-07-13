@@ -15,11 +15,15 @@ class APIClient:   # обертка для фреймворка requests
         try:
             environment = Environment[environment_str]
         except KeyError:
-            raise ValueError(f"Unsupported environment value: {environment_str}")
+            raise ValueError(f"Unsupported environment value: {environment_str}") # Неподдерживаемое значение среды
 
         self.base_url = self.get_base_url(environment)
         # self.session установить httpx-соединение и не закрывать сессию и выполнить несколько запросов
         # это помогает сократить расходы на подключение
+        # можно без сессии:
+        #self.headers = {
+        #    'Content-Type': 'application/json'
+        #}
         self.session = requests.Session()
         self.session.headers = {
             'Content-Type': 'application/json',
@@ -34,25 +38,25 @@ class APIClient:   # обертка для фреймворка requests
         else:
             raise ValueError(f"Unsupported environment: {environment}") # среда не поддерживается
 
-    def get(self, endpoint, params=None, status_code=200):
-        url = self.base_url + endpoint
-        response = requests.get(url, headers=self.headers, params=params)
-        if status_code:
-            assert response.status_code == status_code
-        return response.json()
-
-    def post(self, endpoint, data=None, status_code=200):
-        url = self.base_url + endpoint
-        response = requests.post(url, headers=self.headers, json=data)
-        # ранее было response = httpx.post(BASE_URL + LOGIN_USER, json=users_data)
-        if status_code:
-            assert response.status_code == status_code
-        return response.json()
+    # def get(self, endpoint, params=None, status_code=200):
+    #     url = self.base_url + endpoint
+    #     response = requests.get(url, headers=self.headers, params=params)
+    #     if status_code:
+    #         assert response.status_code == status_code
+    #     return response.json()
+    #
+    # def post(self, endpoint, data=None, status_code=200):
+    #     url = self.base_url + endpoint
+    #     response = requests.post(url, headers=self.headers, json=data)
+    #     # ранее было response = httpx.post(BASE_URL + LOGIN_USER, json=users_data)
+    #     if status_code:
+    #         assert response.status_code == status_code
+    #     return response.json()
 
     # функция: проверка доступности и работоспособности API
     def ping(self):
         with allure.step('Ping api client'):
-            url = f"{self.base_url}/{Endpoints.PING_ENDPOINT}"
+            url = f"{self.base_url}/{Endpoints.PING_ENDPOINT.value}"
             response = self.session.get(url)
             response.raise_for_status()  # проверка http ошибки
         with allure.step('Assert status code'):
@@ -77,17 +81,17 @@ class APIClient:   # обертка для фреймворка requests
     # GetBooking
     def get_booking_by_id(self, booking_id):
         with allure.step(f'Отправляем запрос по адресу/Getting object with  bookings by id: {self.base_url + ВOOKING_ENDPOINT + booking_id}'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}/{booking_id}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             response = self.session.get(url, timeout=Timeouts.TIMEOUT)
             response.raise_for_status()  # получение статус кода, а именно нет ли какой-то определенной  http ошибки
         with allure.step(f'Проверяем код ответа/Checking status code: '):
             assert response.status_code == 200, f"Ожидали статус код 200, но получили/Expected status 200 but got {response.status_code}"
         return  response.json()
 
-    # Delete
+    # Delete - используется авторизация
     def delete_booking(self, booking_id):
         with allure.step('Deleting booking'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}/{booking_id}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             # HTTPBasicAuth происходит кодирование полученных логина и пароля в Basic 64 доб-ся в Authorization
             response = self.session.delete(url, auth=HTTPBasicAuth(Users.USERNAME, Users.PASSWORD))
             response.raise_for_status()
@@ -97,16 +101,16 @@ class APIClient:   # обертка для фреймворка requests
 
     def create_booking(self, booking_data):
         with allure.step('Creating booking'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
             response = self.session.post(url, json=booking_data)
             response.raise_for_status()
         with allure.step('Checking status code'):
             assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
-        return  response.json()
+        return  response
 
     def get_booking_ids(self, params=None):  # params=None передаем значение по умолчанию
         with allure.step('Getting object with booking'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
             response = self.session.get(url, params=params)
             response.raise_for_status()
         with allure.step('Checking status code'):
@@ -115,7 +119,7 @@ class APIClient:   # обертка для фреймворка requests
 
     def update_booking(self, booking_id):
         with allure.step('Updating Booking'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}/{booking_id}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             response = self.session.put(url, auth=HTTPBasicAuth(Users.USERNAME, Users.PASSWORD))
             response.raise_for_status()
         with allure.step('Checking status code:'):
@@ -124,7 +128,7 @@ class APIClient:   # обертка для фреймворка requests
 
     def partial_update_booking(self, booking_id):
         with allure.step('Updating Booking'):
-            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT}/{booking_id}"
+            url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             response = self.session.patch(url, auth=HTTPBasicAuth(Users.USERNAME, Users.PASSWORD))
             response.raise_for_status()
         with allure.step('Checking status code:'):
