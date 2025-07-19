@@ -5,13 +5,24 @@ from conftest import api_client, generate_random_booking_data
 
 @allure.feature('Test Booking')
 @allure.story('Test CreateBooking')
-def test_create_booking(generate_random_booking_data, api_client):
+def test_create_booking(api_client,generate_random_booking_data):
     with allure.step("Подготовка данных для  создания брони"):
         booking_data = generate_random_booking_data
+        #booking_data = {
+        #    "firstname": "Ivan",
+        #    "lastname": "Ivanovich",
+        #    "totalprice": 111,
+        #    "depositpaid": True,
+        #    "bookingdates": {
+        #        "checkin": "2025-02-01",
+        #        "checkout": "2025-02-10"
+        #    },
+        #    "additionalneeds": "Dinner"
+        #}
 
     with allure.step("Отправка запроса на создание бронирования"):
-        response = requests.post("https://restful-booker.herokuapp.com/booking", json=booking_data)
-        #response = api_client.create_booking(booking_data)
+        #response = requests.post("https://restful-booker.herokuapp.com/booking", json=booking_data)
+        response = api_client.create_booking(booking_data)
         response_json = response.json()
 
     with allure.step("Проверка статуса ответа"):
@@ -27,7 +38,5 @@ def test_create_booking(generate_random_booking_data, api_client):
         assert response_json['booking']['bookingdates']['checkin'] == booking_data['bookingdates']['checkin'], "checkin не совпадает с ожидаемым"
         assert response_json['booking']['bookingdates']['checkout'] == booking_data['bookingdates']['checkout'], "checkout не совпадает с ожидаемым"
         assert response_json['booking']['additionalneeds'] == booking_data['additionalneeds'], "additionalneeds не совпадает с ожидаемым"
-
-
 
 

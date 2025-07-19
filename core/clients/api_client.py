@@ -6,6 +6,7 @@ from core.clients.endpoints import Endpoints
 from core.setting.config import Users, Timeouts
 from requests.auth import HTTPBasicAuth
 import allure
+import pytest
 
 load_dotenv() # чтобы прогружались все актуальные переменные, которые в файле dotenv
 
@@ -80,7 +81,7 @@ class APIClient:   # обертка для фреймворка requests
 
     # GetBooking
     def get_booking_by_id(self, booking_id):
-        with allure.step(f'Отправляем запрос по адресу/Getting object with  bookings by id: {self.base_url + ВOOKING_ENDPOINT + booking_id}'):
+        with allure.step(f'Отправляем запрос по адресу/Getting object with  bookings by id: {self.base_url + Endpoints.BOOKING_ENDPOINT.value + booking_id}'):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             response = self.session.get(url, timeout=Timeouts.TIMEOUT)
             response.raise_for_status()  # получение статус кода, а именно нет ли какой-то определенной  http ошибки
@@ -99,14 +100,15 @@ class APIClient:   # обертка для фреймворка requests
             assert response.status_code == 201, f"Expected status 201 but got {response.status_code}"
         return response.status_code == 201
 
-    def create_booking(self, booking_data):
+    def create_booking(self,booking_data):
         with allure.step('Creating booking'):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
-            response = self.session.post(url, json=booking_data)
+            #response = self.session.post(url, json=booking_data)
+            response = requests.post(url, json=booking_data)
             response.raise_for_status()
         with allure.step('Checking status code'):
-            assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
-        return  response
+           assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
+        return response
 
     def get_booking_ids(self, params=None):  # params=None передаем значение по умолчанию
         with allure.step('Getting object with booking'):

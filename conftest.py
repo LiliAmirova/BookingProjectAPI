@@ -4,13 +4,11 @@ from datetime import datetime, timedelta
 from faker import Faker
 BASE_URL = "https://restful-booker.herokuapp.com/"
 
-
 @pytest.fixture(scope="session")  # существует в рамках сессии
 def api_client():  # это ф-ция, кот создает объект APIClient
     client = APIClient()  # создали объект класса APIClient (доступны все функции которые есть у нашего клиента
     client.auth()
     return client  # чтобы вернуть объект
-
 
 @pytest.fixture
 def booking_dates():  # ф-ция, которая генерит даты в определенном диапазоне от текущего дня
@@ -22,7 +20,6 @@ def booking_dates():  # ф-ция, которая генерит даты в о�
         "checkin": checkin_date.strftime('%Y-%m-%d'),
         "checkout": checkout_date.strftime('%Y-%m-%d')
     }
-
 
 @pytest.fixture()  # с помощью faker генерим случайные данные
 def generate_random_booking_data(booking_dates):
