@@ -27,7 +27,8 @@ class APIClient:   # обертка для фреймворка requests
         #}
         self.session = requests.Session()
         self.session.headers = {
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',  # Ожидаем JSON в ответе
+            'Content-Type': 'application/json', # Отправляем JSON
             'Cookie': 'token'  # сама добавила для функции auth
         }
 
@@ -103,8 +104,14 @@ class APIClient:   # обертка для фреймворка requests
     def create_booking(self,booking_data):
         with allure.step('Creating booking'):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
-            #response = self.session.post(url, json=booking_data)
-            response = requests.post(url, json=booking_data)
+            print("URL:", url)
+            print("Request Data:", booking_data)
+            response = self.session.post(url, json=booking_data,timeout=10)
+            self.session.headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            #response = requests.post(url, json=booking_data)
             response.raise_for_status()
         with allure.step('Checking status code'):
            assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
