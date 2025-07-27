@@ -40,3 +40,5 @@ def generate_random_booking_data(booking_dates):
 
     }
     return data
+
+
