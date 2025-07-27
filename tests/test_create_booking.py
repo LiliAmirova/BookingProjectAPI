@@ -72,10 +72,10 @@ def test_creating_booking_with_empty_data(api_client):
     booking_data = {
     }
 
-    response = api_client.create_booking(booking_data,status_code=500)
+    response = api_client.create_booking(booking_data,status_code=400)
 
     with allure.step("Проверка статуса ответа"):
-        assert response.status_code == 500, f"Ожидался статус 500, получен {response.status_code}"
+        assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
 
 
 

@@ -111,9 +111,7 @@ class APIClient:   # обертка для фреймворка requests
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
-            #response = requests.post(url, json=booking_data)
-            if status_code==200:   # это условие прописала для корректной обработки booking_data={}
-                response.raise_for_status()
+            response.raise_for_status()
 
         with allure.step('Checking status code'):
            assert response.status_code == status_code, f"Expected status {status_code} but got {response.status_code}"
