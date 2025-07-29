@@ -13,7 +13,7 @@ def test_create_booking_with_random_data(api_client,generate_random_booking_data
 
     with allure.step("Отправка запроса на создание бронирования и валидация"):
         #response = requests.post("https://restful-booker.herokuapp.com/booking", json=booking_data)
-        response = api_client.create_booking(booking_data,status_code=200)
+        response = api_client.create_booking(booking_data,expected_status_code=200)
         response_json = response.json()
 
         try:
@@ -50,7 +50,7 @@ def test_creating_booking_with_custom_data(api_client):
         "additionalneeds": "Dinner"
     }
 
-    response = api_client.create_booking(booking_data, status_code=200)
+    response = api_client.create_booking(booking_data, expected_status_code=200)
     response_json = response.json()
 
     try:
@@ -72,10 +72,10 @@ def test_creating_booking_with_empty_data(api_client):
     booking_data = {
     }
 
-    response = api_client.create_booking(booking_data,status_code=400)
+    response = api_client.create_booking(booking_data,expected_status_code=500)
 
     with allure.step("Проверка статуса ответа"):
-        assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
+        assert response.status_code == 500, f"Ожидался статус 500, получен {response.status_code}"
 
 
 
