@@ -111,14 +111,10 @@ class APIClient:   # обертка для фреймворка requests
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
+            response.raise_for_status()
 
         with allure.step('Checking status code'):
-            try:
-                response.raise_for_status()  # Проверяем ожидаемый статус-код
-                assert response.status_code == expected_status_code, f"Expected status {expected_status_code} but got {response.status_code}"
-            except requests.exceptions.HTTPError as e:
-                print(f"Ожидаемая ошибка HTTP: {e}")
-                print("Response:", response.text)  # Добавляем вывод ответа сервера
+            assert response.status_code == expected_status_code, f'Expected status {expected_status_code} but got {response.status_code}'
         return response
 
     def get_booking_ids(self, params=None):  # params=None передаем значение по умолчанию
