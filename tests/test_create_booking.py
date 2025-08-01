@@ -50,7 +50,7 @@ def test_creating_booking_with_custom_data(api_client):
         "additionalneeds": "Dinner"
     }
 
-    response = api_client.create_booking(booking_data, expected_status_code=200)
+    response = api_client.create_booking(booking_data)
     response_json = response.json()
 
     try:
@@ -68,21 +68,14 @@ def test_creating_booking_with_custom_data(api_client):
 
 @allure.feature('Test creating Booking')
 @allure.story('Negative: Creating booking with empty data')
-def test_creating_booking_with_empty_data(api_client, expected_status_code=500): # pytest.raises как контекстный менеджер для перехвата исключения
+def test_creating_booking_with_empty_data(api_client):  # pytest.raises как контекстный менеджер для перехвата исключения
     booking_data = {}
 
     with allure.step('Checking status code'):
         with pytest.raises(requests.exceptions.HTTPError) as exc_info:
-            response = api_client.create_booking(booking_data, expected_status_code)
-            response.raise_for_status()
+            api_client.create_booking(booking_data)
 
-        # Проверяем, что статус код в исключении соответствует ожидаемому
-        assert exc_info.value.response.status_code == expected_status_code, \
-            f"Expected status {expected_status_code} but got {exc_info.value.response.status_code}"
-
-        print(f"Ожидаемая ошибка HTTP: {exc_info.value}")
-        print("Response:", exc_info.value.response.text)
-
-
+            # Проверяем, что статус код в исключении соответствует ожидаемому
+            assert exc_info.value.response.status_code == 500, f"Expected status 500 but got {exc_info.value.response.status_code}"
 
 

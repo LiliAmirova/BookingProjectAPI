@@ -101,11 +101,9 @@ class APIClient:   # обертка для фреймворка requests
             assert response.status_code == 201, f"Expected status 201 but got {response.status_code}"
         return response.status_code == 201
 
-    def create_booking(self,booking_data,expected_status_code):
+    def create_booking(self,booking_data):
         with allure.step('Creating booking'):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
-            print("URL:", url)
-            print("Request Data:", booking_data)
             response = self.session.post(url, json=booking_data,timeout=10)
             self.session.headers = {
                 'Accept': 'application/json',
@@ -114,7 +112,7 @@ class APIClient:   # обертка для фреймворка requests
             response.raise_for_status()
 
         with allure.step('Checking status code'):
-            assert response.status_code == expected_status_code, f'Expected status {expected_status_code} but got {response.status_code}'
+            assert response.status_code == 200, f'Expected status 200 but got {response.status_code}'
         return response
 
     def get_booking_ids(self, params=None):  # params=None передаем значение по умолчанию
