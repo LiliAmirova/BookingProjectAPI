@@ -26,7 +26,7 @@ class APIClient:   # обертка для фреймворка requests
         #    'Content-Type': 'application/json'
         #}
         self.session = requests.Session()
-        self.session.headers = {
+        self.session.headers = { # заголовки можно убрать
             'Accept': 'application/json',  # Ожидаем JSON в ответе
             'Content-Type': 'application/json', # Отправляем JSON
             'Cookie': 'token'  # сама добавила для функции auth
@@ -104,17 +104,15 @@ class APIClient:   # обертка для фреймворка requests
     def create_booking(self,booking_data):
         with allure.step('Creating booking'):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
-            print("URL:", url)
-            print("Request Data:", booking_data)
             response = self.session.post(url, json=booking_data,timeout=10)
             self.session.headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
-            #response = requests.post(url, json=booking_data)
             response.raise_for_status()
+
         with allure.step('Checking status code'):
-           assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
+            assert response.status_code == 200, f'Expected status 200 but got {response.status_code}'
         return response
 
     def get_booking_ids(self, params=None):  # params=None передаем значение по умолчанию
@@ -143,4 +141,6 @@ class APIClient:   # обертка для фреймворка requests
         with allure.step('Checking status code:'):
             assert response.status_code == 200, f"Expected status 200 but got {response.status_code}"
         return response.json()
+
+
 
